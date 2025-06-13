@@ -1,0 +1,161 @@
+/* Order Details Page Styles */
+.order-details {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.order-header {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.order-header h2 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.order-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.order-body {
+    padding: 2rem;
+}
+
+.order-items {
+    margin: 2rem 0;
+}
+
+.order-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.item-notes {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.item-quantity {
+    width: 60px;
+    text-align: center;
+}
+
+.item-price {
+    width: 100px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.order-totals {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.totals-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.totals-row:last-child {
+    margin-bottom: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.order-notes {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.order-notes h5 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.order-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .order-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .order-body {
+        padding: 1.5rem;
+    }
+    
+    .order-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .order-actions .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .order-details {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+    
+    .order-actions {
+        display: none;
+    }
+}

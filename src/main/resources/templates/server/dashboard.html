@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Server Dashboard - Coffee Shop</title>
+    <style>
+        .table-card {
+            transition: all 0.3s ease;
+        }
+        .table-card:hover {
+            transform: translateY(-5px);
+        }
+        .table-status-available {
+            border-left: 5px solid #198754;
+        }
+        .table-status-occupied {
+            border-left: 5px solid #ffc107;
+        }
+        .table-status-reserved {
+            border-left: 5px solid #0dcaf0;
+        }
+        .status-legend {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .status-legend .badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+        }
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        .table-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .table-capacity {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #6c757d;
+        }
+        .refresh-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .refresh-button i {
+            transition: transform 0.3s ease;
+        }
+        .refresh-button:hover i {
+            transform: rotate(180deg);
+        }
+        .order-card {
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+        .order-items {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+        .order-items li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Tables Section -->
+            <div class="row mb-4">
+                <div class="col-12 col-md-6">
+                    <h2><i class="bi bi-grid-3x3-gap"></i> Table Layout</h2>
+                </div>
+                <div class="col-12 col-md-6 d-flex justify-content-md-end align-items-center">
+                    <div class="status-legend">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Available
+                        </span>
+                        <span class="badge bg-warning">
+                            <i class="bi bi-people-fill"></i> Occupied
+                        </span>
+                        <span class="badge bg-info">
+                            <i class="bi bi-calendar-check"></i> Reserved
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <button id="refreshButton" class="btn btn-outline-secondary refresh-button">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Tables
+                    </button>
+                </div>
+            </div>
+
+            <div id="table-layout" class="row g-4">
+                <div th:if="${#lists.isEmpty(assignedTables)}" class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No tables are currently assigned to you.
+                    </div>
+                </div>
+                
+                <div th:each="table : ${assignedTables}" class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card shadow-sm h-100 table-card" th:classappend="${table.statusClass}">
+                        <div class="card-body">
+                            <div class="table-info">
+                                <h5 class="card-title mb-0" th:text="|Table ${table.number}|">Table 1</h5>
+                                <div class="table-capacity">
+                                    <i class="bi bi-person"></i>
+                                    <span th:text="${table.capacity}">4</span>
+                                </div>
+                                <span class="badge" th:classappend="${table.statusBadge}"
+                                      th:text="${table.statusText}">Status</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="table-actions">
+                                <a th:if="${table.canCreateOrder}"
+                                   th:href="@{/server/orders/new(tableId=${table.id})}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle"></i> New Order
+                                </a>
+                                <a th:if="${table.canEditOrder}"
+                                   th:href="@{/server/orders/new(tableId=${table.id})}" 
+                                   class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i> Edit Order
+                                </a>
+                                <button th:if="${table.canMarkAvailable}"
+                                        th:onclick="|markTableAvailable(${table.id})|"
+                                        class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-lg"></i> Mark Available
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Orders Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h2><i class="bi bi-clock-history"></i> Active Orders</h2>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-2">
+                <div th:if="${#lists.isEmpty(activeOrders)}" class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No active orders at the moment.
+                    </div>
+                </div>
+                
+                <div th:each="order : ${activeOrders}" class="col-md-6 col-lg-4">
+                    <div class="card order-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0" th:text="${'Order #' + order.orderNumber}">Order #123</h6>
+                            <span class="badge" 
+                                  th:classappend="${'bg-' + (order.status == 'PENDING' ? 'warning' : 
+                                                           order.status == 'IN_PROGRESS' ? 'info' : 
+                                                           order.status == 'READY' ? 'success' : 'secondary')}"
+                                  th:text="${order.status}">Status</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <i class="bi bi-grid"></i>
+                                <span th:text="${'Table ' + order.table.number}">Table 1</span>
+                            </p>
+                            <ul class="list-unstyled order-items">
+                                <li th:each="item : ${order.items}">
+                                    <span th:text="${item.quantity + 'x ' + item.product.name}">1x Espresso</span>
+                                </li>
+                            </ul>
+                            <p class="mb-0 text-muted" th:if="${order.notes}">
+                                <i class="bi bi-chat-left-text"></i>
+                                <small th:text="${order.notes}">Special instructions</small>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/server/orders/{id}(id=${order.id})}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function markTableAvailable(tableId) {
+            updateTableStatus(tableId, 'AVAILABLE');
+        }
+
+        function updateTableStatus(tableId, status) {
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            
+            fetch(`/server/tables/${tableId}/status?status=${status}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to update table status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update table status');
+            });
+        }
+
+        document.getElementById('refreshButton').addEventListener('click', function() {
+            location.reload();
+        });
+    </script>
+</body>
+</html> 
+ 

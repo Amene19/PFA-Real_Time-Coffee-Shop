@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Product Availability - Coffee Shop</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h2 class="mb-4"><i class="bi bi-toggle-on"></i> Product Availability</h2>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Toggle Availability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="product : ${products}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img th:src="${product.imageUrl}" alt="Product" class="rounded me-3" width="50">
+                                            <span th:text="${product.name}">Product Name</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${product.category}">Category</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${product.available ? 'bg-success' : 'bg-danger'}"
+                                              th:text="${product.available ? 'Available' : 'Unavailable'}">Status</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input class="form-check-input" type="checkbox" role="switch" 
+                                                   th:id="${'productSwitch' + product.id}"
+                                                   th:checked="${product.available}"
+                                                   th:onclick="'toggleAvailability(' + ${product.id} + ', this.checked)'">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(products)}">
+                                    <td colspan="4" class="text-center">No products found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            function toggleAvailability(productId, isAvailable) {
+                fetch(`/barman/products/${productId}/availability`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+                    },
+                    body: JSON.stringify({ available: isAvailable })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showToast(`Product availability updated`, 'success');
+                        // Optionally reload or dynamically update the status badge
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast('Failed to update availability', 'error');
+                        // Revert the switch state on failure
+                        const toggleSwitch = document.getElementById('productSwitch' + productId);
+                        toggleSwitch.checked = !isAvailable;
+                    }
+                });
+            }
+        </script>
+    </th:block>
+</body>
+</html> 

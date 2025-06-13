@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Login - Coffee Shop</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8f9fa, #e0eafc);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-container {
+            min-height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 2.5rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: #6f42c1;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header h4 {
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        }
+
+        .input-group-text {
+            background-color: #f1f3f5;
+            border: none;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .btn-login {
+            padding: 0.75rem;
+            font-weight: 600;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6f42c1, #b197fc);
+            color: white;
+            border: none;
+            transition: background 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #5e35b1, #9775fa);
+        }
+
+        .btn-outline-secondary {
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #e9ecef;
+            color: #343a40;
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+
+        .invalid-feedback {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="login-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-lg-6">
+                    <div class="card login-card">
+                        <div class="card-body">
+                            <div class="login-header">
+                                <i class="bi bi-cup-hot"></i>
+                                <h4>Welcome Back</h4>
+                                <p>Sign in to your account</p>
+                            </div>
+
+                            <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>Invalid username or password</div>
+                            </div>
+
+                            <div th:if="${param.logout}" class="alert alert-success d-flex align-items-center" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <div>You have been logged out</div>
+                            </div>
+
+                            <div th:if="${param.registered}" class="alert alert-success d-flex align-items-center" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <div>Registration successful! Please sign in.</div>
+                            </div>
+
+                            <div th:if="${param.pending}" class="alert alert-warning d-flex align-items-center" role="alert">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                <div>Account pending approval. Please contact administrator.</div>
+                            </div>
+
+                            <form th:action="@{/login}" method="post" class="needs-validation" novalidate>
+                                <div class="mb-4">
+                                    <label for="username" class="form-label">Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" class="form-control" id="username" name="username"
+                                               required autofocus placeholder="Enter your username">
+                                        <div class="invalid-feedback">Please enter your username</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <input type="password" class="form-control" id="password" name="password"
+                                               required placeholder="Enter your password">
+                                        <div class="invalid-feedback">Please enter your password</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-3">
+                                    <button type="submit" class="btn btn-login">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                    </button>
+                                    <a href="/signup" class="btn btn-outline-secondary">
+                                        <i class="bi bi-person-plus me-2"></i>Create Account
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            (function () {
+                'use strict'
+                const forms = document.querySelectorAll('.needs-validation');
+                Array.from(forms).forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            })();
+        </script>
+    </th:block>
+</div>
+</body>
+</html>

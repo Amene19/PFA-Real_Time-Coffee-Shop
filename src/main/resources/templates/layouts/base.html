@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - Coffee Shop">Coffee Shop</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" th:href="@{/images/favicon.png}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 56px;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .navbar-brand img {
+            height: 30px;
+        }
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        .footer {
+            margin-top: auto;
+            padding: 1rem 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            border: none;
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+        .btn-primary {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .btn-primary:hover {
+            background-color: #1a252f;
+            border-color: #1a252f;
+        }
+        .alert {
+            margin-bottom: 1rem;
+        }
+    </style>
+    
+    <!-- Additional CSS -->
+    <th:block layout:fragment="styles"></th:block>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="bi bi-cup-hot"></i> Coffee Shop
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <!-- Admin Navigation -->
+                <ul class="navbar-nav me-auto" sec:authorize="hasRole('ADMIN')">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/products}">
+                            <i class="bi bi-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/tables}">
+                            <i class="bi bi-grid"></i> Tables
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Server Navigation -->
+                <ul class="navbar-nav me-auto" sec:authorize="hasRole('SERVER')">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/server/dashboard}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/server/tables}">
+                            <i class="bi bi-grid"></i> Tables
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/server/orders}">
+                            <i class="bi bi-receipt"></i> Orders
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Barman Navigation -->
+                <ul class="navbar-nav me-auto" sec:authorize="hasRole('BARMAN')">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/barman/dashboard}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Cashier Navigation -->
+                <ul class="navbar-nav me-auto" sec:authorize="hasRole('CASHIER')">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/cashier/dashboard}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/cashier/payments}">
+                            <i class="bi bi-credit-card"></i> Payments
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- User Menu -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span sec:authentication="name">Username</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="dropdown-item">
+                                    <button type="submit" class="btn btn-link text-decoration-none w-100 text-start p-0">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid">
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${successMessage}">Success message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span th:text="${errorMessage}">Error message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${warningMessage}">Warning message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill"></i>
+            <span th:text="${infoMessage}">Info message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Page Content -->
+        <div layout:fragment="content">
+            <!-- Content will be inserted here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2024 Coffee Shop. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Additional JavaScript -->
+    <th:block layout:fragment="scripts"></th:block>
+
+    <!-- Common JavaScript -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+
+        // Add active class to current nav item
+        $(document).ready(function() {
+            const currentPath = window.location.pathname;
+            $('.nav-link').each(function() {
+                if ($(this).attr('href') === currentPath) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+
+        // CSRF token for AJAX requests
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+        
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+    </script>
+</body>
+</html> 

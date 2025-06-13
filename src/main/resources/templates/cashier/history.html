@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Payment History - Coffee Shop</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h2 class="mb-4"><i class="bi bi-clock-history"></i> Payment History</h2>
+
+            <!-- Filters -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form th:action="@{/cashier/history}" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                                <input type="date" class="form-control" name="startDate" th:value="${param.startDate}">
+                                <input type="date" class="form-control" name="endDate" th:value="${param.endDate}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="paymentMethod">
+                                <option value="">All Methods</option>
+                                <option value="CASH">Cash</option>
+                                <option value="CARD">Card</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Payment Table -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Payment ID</th>
+                                    <th>Order ID</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="payment : ${payments}">
+                                    <td th:text="${payment.id}">1</td>
+                                    <td th:text="${'#' + payment.order.id}">#123</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(payment.order.total, 1, 'COMMA', 2, 'POINT')}">$25.00</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${payment.paymentMethod == 'CASH' ? 'bg-success' : 'bg-info'}"
+                                              th:text="${payment.paymentMethod}">CASH</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(payment.paymentDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                    <td>
+                                        <a th:href="@{/cashier/receipt/{paymentId}(paymentId=${payment.id})}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-receipt"></i> View Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(payments)}">
+                                    <td colspan="6" class="text-center">No payments found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/cashier/history(page=${currentPage - 1}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, paymentMethod=${param.paymentMethod})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:classappend="${currentPage == i} ? 'active'">
+                                <a class="page-link" th:href="@{/cashier/history(page=${i}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, paymentMethod=${param.paymentMethod})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/cashier/history(page=${currentPage + 1}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, paymentMethod=${param.paymentMethod})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
+ 

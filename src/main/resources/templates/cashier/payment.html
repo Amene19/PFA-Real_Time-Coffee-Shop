@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Process Payment - Coffee Shop</title>
+    <style>
+        .payment-card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .payment-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .payment-header h5 {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .order-summary {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+        .order-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            background-color: white;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .order-item:last-child {
+            margin-bottom: 0;
+        }
+        .payment-method {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .payment-method-option {
+            flex: 1;
+            text-align: center;
+        }
+        .payment-method-option input[type="radio"] {
+            display: none;
+        }
+        .payment-method-option label {
+            display: block;
+            padding: 1rem;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method-option input[type="radio"]:checked + label {
+            border-color: #2c3e50;
+            background-color: #2c3e50;
+            color: white;
+        }
+        .payment-method-option i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .amount-input {
+            font-size: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .amount-input::-webkit-inner-spin-button,
+        .amount-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .change-display {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .change-amount {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .quick-amount {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .quick-amount:hover {
+            background-color: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+        .total-section {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        .confirm-button {
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .confirm-button:disabled {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card shadow-sm payment-card">
+                        <div class="payment-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>
+                                    <i class="bi bi-credit-card"></i>
+                                    Payment for Order #<span th:text="${order.orderNumber}">123</span>
+                                </h5>
+                                <a th:href="@{/cashier/dashboard}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <!-- Order Details -->
+                                <div class="col-md-5">
+                                    <div class="order-summary">
+                                        <h6 class="mb-3">Order Summary</h6>
+                                        <div th:each="item : ${order.items}" class="order-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1" th:text="${item.product.name}">Product Name</h6>
+                                                    <small class="text-muted" th:text="${item.quantity + ' x $' + #numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 2, 'POINT')}">Qty x Price</small>
+                                                </div>
+                                                <span class="text-muted" th:text="${'$' + #numbers.formatDecimal(item.quantity * item.unitPrice, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Subtotal</span>
+                                            <span th:text="${'$' + #numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Tax (10%)</span>
+                                            <span th:text="${'$' + #numbers.formatDecimal(order.tax, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                        </div>
+                                        
+                                        <div class="total-section">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Total Amount</span>
+                                                <span class="h4 mb-0" th:text="${'$' + #numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Form -->
+                                <div class="col-md-7">
+                                    <form th:action="@{/cashier/payment/{orderId}(orderId=${order.id})}" 
+                                          method="post" 
+                                          id="paymentForm"
+                                          class="needs-validation" 
+                                          novalidate>
+                                        
+                                        <h6 class="mb-3">Payment Method</h6>
+                                        <div class="payment-method">
+                                            <div class="payment-method-option">
+                                                <input type="radio" name="paymentMethod" id="cash" value="CASH" checked required>
+                                                <label for="cash">
+                                                    <i class="bi bi-cash"></i>
+                                                    <div>Cash</div>
+                                                </label>
+                                            </div>
+                                            <div class="payment-method-option">
+                                                <input type="radio" name="paymentMethod" id="credit" value="CARD" required>
+                                                <label for="credit">
+                                                    <i class="bi bi-credit-card"></i>
+                                                    <div>Credit Card</div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div id="cashPaymentSection">
+                                            <h6 class="mb-3">Quick Amount</h6>
+                                            <div class="text-center mb-3">
+                                                <span class="quick-amount" th:data-amount="${order.total}">Exact</span>
+                                                <span class="quick-amount" th:data-amount="${#numbers.formatDecimal(order.total + 5, 1, 'COMMA', 2, 'POINT')}">+$5</span>
+                                                <span class="quick-amount" th:data-amount="${#numbers.formatDecimal(order.total + 10, 1, 'COMMA', 2, 'POINT')}">+$10</span>
+                                                <span class="quick-amount" th:data-amount="${#numbers.formatDecimal(order.total + 20, 1, 'COMMA', 2, 'POINT')}">+$20</span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="amountPaid" class="form-label">Amount Received</label>
+                                                <div class="input-group input-group-lg">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" 
+                                                           class="form-control amount-input" 
+                                                           id="amountPaid" 
+                                                           name="amountPaid" 
+                                                           th:value="${order.total}" 
+                                                           step="0.01" 
+                                                           required>
+                                                </div>
+                                            </div>
+
+                                            <div class="change-display">
+                                                <div class="text-muted mb-1">Change Due</div>
+                                                <div class="change-amount" id="changeDue">$0.00</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-grid gap-2 mt-4">
+                                            <button class="btn btn-primary confirm-button" type="submit" id="confirmButton">
+                                                <i class="bi bi-check-circle"></i> Confirm Payment
+                                            </button>
+                                            <a th:href="@{/cashier/dashboard}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-x-circle"></i> Cancel
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            const totalAmount = /*[[${order.total}]]*/ 0;
+            const amountPaidInput = document.getElementById('amountPaid');
+            const changeDueElem = document.getElementById('changeDue');
+            const cashPaymentSection = document.getElementById('cashPaymentSection');
+            const confirmButton = document.getElementById('confirmButton');
+            const paymentForm = document.getElementById('paymentForm');
+
+            function updateChangeDue() {
+                const amountPaid = parseFloat(amountPaidInput.value) || 0;
+                const change = amountPaid - totalAmount;
+                changeDueElem.textContent = '$' + Math.max(0, change).toFixed(2);
+                
+                // Enable/disable confirm button based on amount paid
+                if (document.getElementById('cash').checked) {
+                    confirmButton.disabled = amountPaid < totalAmount;
+                } else {
+                    confirmButton.disabled = false;
+                }
+            }
+
+            // Quick amount buttons
+            document.querySelectorAll('.quick-amount').forEach(button => {
+                button.addEventListener('click', () => {
+                    amountPaidInput.value = button.dataset.amount;
+                    updateChangeDue();
+                });
+            });
+
+            // Payment method toggle
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'CASH') {
+                        cashPaymentSection.style.display = 'block';
+                        updateChangeDue();
+                    } else {
+                        cashPaymentSection.style.display = 'none';
+                        confirmButton.disabled = false;
+                    }
+                });
+            });
+
+            // Amount paid input handler
+            amountPaidInput.addEventListener('input', updateChangeDue);
+
+            // Form validation
+            paymentForm.addEventListener('submit', function(event) {
+                if (!paymentForm.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                if (document.getElementById('cash').checked) {
+                    const amountPaid = parseFloat(amountPaidInput.value) || 0;
+                    if (amountPaid < totalAmount) {
+                        event.preventDefault();
+                        alert('Amount paid must be at least equal to the total amount.');
+                        return false;
+                    }
+                }
+                
+                paymentForm.classList.add('was-validated');
+            });
+
+            // Initialize
+            updateChangeDue();
+        </script>
+    </th:block>
+</body>
+</html> 
+ 

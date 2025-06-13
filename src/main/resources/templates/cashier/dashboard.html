@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Cashier Dashboard - Coffee Shop</title>
+    <style>
+        .summary-card {
+            transition: all 0.3s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        .summary-item {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-item .label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        .summary-item .value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .summary-item.total {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .table-card {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-responsive {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+        .table th {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1;
+        }
+        .refresh-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .refresh-button i {
+            transition: transform 0.3s ease;
+        }
+        .refresh-button:hover i {
+            transform: rotate(180deg);
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .action-button {
+            border-radius: 20px;
+            padding: 0.375rem 1rem;
+        }
+        .search-box {
+            position: relative;
+            max-width: 300px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 2.5rem;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h2><i class="bi bi-cash-stack"></i> Cashier Dashboard</h2>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end align-items-center">
+                    <button id="refreshButton" class="btn btn-outline-secondary refresh-button">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Daily Summary -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100 summary-card">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-graph-up"></i> Daily Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="summary-item">
+                                <div class="label">
+                                    <i class="bi bi-receipt"></i>
+                                    Transactions
+                                </div>
+                                <div class="value" th:text="${summary.totalTransactions}">0</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">
+                                    <i class="bi bi-cash"></i>
+                                    Cash
+                                </div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalCash, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">
+                                    <i class="bi bi-credit-card"></i>
+                                    Card
+                                </div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalCard, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                            </div>
+                            <div class="summary-item total">
+                                <div class="label">
+                                    <i class="bi bi-wallet2"></i>
+                                    Total Revenue
+                                </div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tables Overview -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm h-100 table-card">
+                        <div class="card-header bg-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-grid"></i> Tables Overview
+                                </h5>
+                                <div class="search-box">
+                                    <i class="bi bi-search"></i>
+                                    <input type="text" class="form-control" id="tableSearch" 
+                                           placeholder="Search tables...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-4">Table</th>
+                                            <th>Order #</th>
+                                            <th>Amount Due</th>
+                                            <th>Status</th>
+                                            <th class="text-end pe-4">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tables-overview-body">
+                                        <tr th:each="table : ${tables}" th:data-table-number="${table.number}">
+                                            <td class="ps-4">
+                                                <strong th:text="${'Table ' + table.number}">Table 1</strong>
+                                            </td>
+                                            <td th:text="${table.order != null ? '#' + table.order.orderNumber : '-'}">#123</td>
+                                            <td th:text="${table.order != null ? '$' + #numbers.formatDecimal(table.order.total, 1, 'COMMA', 2, 'POINT') : '-'}">$25.00</td>
+                                            <td>
+                                                <span class="status-badge" 
+                                                      th:classappend="${table.order != null and table.order.paymentStatus == 'PAID' ? 'bg-success' : 
+                                                                      table.order != null and table.order.paymentStatus == 'UNPAID' ? 'bg-danger' : 'bg-secondary'}"
+                                                      th:text="${table.order != null ? table.order.paymentStatus : 'Available'}">Status</span>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <a th:if="${table.order != null and table.order.paymentStatus == 'UNPAID'}"
+                                                   th:href="@{/cashier/payment/{orderId}(orderId=${table.order.id})}" 
+                                                   class="btn btn-primary action-button">
+                                                    <i class="bi bi-credit-card"></i> Process Payment
+                                                </a>
+                                                <a th:if="${table.order != null and table.order.paymentStatus == 'PAID'}"
+                                                   th:href="@{/cashier/receipt/{orderId}(orderId=${table.order.id})}" 
+                                                   class="btn btn-outline-secondary action-button">
+                                                    <i class="bi bi-receipt"></i> View Receipt
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(tables)}">
+                                            <td colspan="5" class="text-center py-4">
+                                                <i class="bi bi-inbox display-4 text-muted"></i>
+                                                <p class="text-muted mt-2">No occupied tables</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            function refreshDashboard() {
+                const button = document.getElementById('refreshButton');
+                button.disabled = true;
+                button.querySelector('i').style.transform = 'rotate(180deg)';
+                
+                Promise.all([
+                    fetch('/cashier/dashboard/summary').then(res => res.text()),
+                    fetch('/cashier/dashboard/tables').then(res => res.text())
+                ])
+                .then(([summaryHtml, tablesHtml]) => {
+                    const parser = new DOMParser();
+                    
+                    // Update summary
+                    const newSummary = parser.parseFromString(summaryHtml, 'text/html')
+                        .querySelector('.card-body');
+                    document.querySelector('.summary-card .card-body').innerHTML = newSummary.innerHTML;
+                    
+                    // Update tables
+                    const newTables = parser.parseFromString(tablesHtml, 'text/html')
+                        .getElementById('tables-overview-body');
+                    document.getElementById('tables-overview-body').innerHTML = newTables.innerHTML;
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.querySelector('i').style.transform = 'rotate(0deg)';
+                });
+            }
+
+            function filterTables() {
+                const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
+                const rows = document.querySelectorAll('#tables-overview-body tr[data-table-number]');
+                
+                rows.forEach(row => {
+                    const tableNumber = row.getAttribute('data-table-number');
+                    const orderNumber = row.querySelector('td:nth-child(2)').textContent;
+                    const shouldShow = 
+                        `table ${tableNumber}`.includes(searchTerm) ||
+                        orderNumber.toLowerCase().includes(searchTerm);
+                    
+                    row.style.display = shouldShow ? '' : 'none';
+                });
+            }
+
+            // Event listeners
+            document.getElementById('refreshButton').addEventListener('click', refreshDashboard);
+            document.getElementById('tableSearch').addEventListener('input', filterTables);
+
+            // Auto-refresh every 30 seconds
+            setInterval(refreshDashboard, 30000);
+        </script>
+    </th:block>
+</body>
+</html> 
+ 

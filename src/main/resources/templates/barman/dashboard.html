@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Barman Dashboard - Coffee Shop</title>
+    <style>
+        .order-card {
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+        .order-card .card-body {
+            padding: 1rem;
+        }
+        .order-items {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+        .order-items li {
+            margin-bottom: 0.25rem;
+        }
+        .status-badge {
+            font-size: 0.875rem;
+        }
+        .refresh-button {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .refresh-button:hover {
+            transform: rotate(180deg);
+        }
+        @keyframes highlight {
+            0% { background-color: #fff3cd; }
+            100% { background-color: white; }
+        }
+        .new-order {
+            animation: highlight 2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <div class="row mb-4">
+                <div class="col d-flex justify-content-between align-items-center">
+                    <h2><i class="bi bi-cup-hot"></i> Orders Queue</h2>
+                    <button class="btn btn-outline-primary refresh-button" onclick="window.location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Orders -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(orders)}" class="text-center py-4">
+                                <i class="bi bi-inbox text-muted fs-1"></i>
+                                <p class="text-muted mt-2">No orders in queue</p>
+                            </div>
+                            
+                            <div th:unless="${#lists.isEmpty(orders)}" class="row g-4">
+                                <div th:each="order : ${orders}" class="col-md-6 col-lg-4">
+                                    <div class="card order-card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0" th:text="${'Order #' + order.orderNumber}">Order #123</h6>
+                                            <span class="badge" 
+                                                  th:classappend="${'bg-' + (order.status == 'PENDING' ? 'warning' : 
+                                                                           order.status == 'IN_PROGRESS' ? 'info' : 
+                                                                           order.status == 'READY' ? 'success' : 'secondary')}"
+                                                  th:text="${order.status}">Status</span>
+                                        </div>
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0 fw-bold" th:text="'Order #' + ${order.orderNumber}">Order #1234</h6>
+                                                <span class="badge" 
+                                                      th:class="${'bg-' + (order.status == 'PENDING' ? 'warning' : (order.status == 'IN_PROGRESS' ? 'primary' : 'success'))}">
+                                                    <span th:text="${order.status == 'PENDING' ? 'Pending' : (order.status == 'IN_PROGRESS' ? 'Preparing' : 'Ready')}">Status</span>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-clock me-2"></i>
+                                                <small class="text-muted" th:text="${#temporals.format(order.createdAt, 'hh:mm a')}">10:30 AM</small>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-3">
+                                                <i class="bi bi-table me-2"></i>
+                                                <small class="text-muted" th:text="'Table ' + ${order.table?.number}">Table 5</small>
+                                            </div>
+                                            
+                                            <div class="order-items mb-3">
+                                                <div class="d-flex align-items-center mb-2" th:each="item : ${order.items}">
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between">
+                                                            <span th:text="${item.quantity + 'x ' + item.product.name}">1x Espresso</span>
+                                                            <span class="fw-medium" th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">$3.50</span>
+                                                        </div>
+                                                        <small class="text-muted d-block" th:if="${item.notes}" th:text="'Note: ' + ${item.notes}">Note: Extra hot</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                                                <span class="fw-bold">Total:</span>
+                                                <span class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$3.50</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                                            <div class="d-grid gap-2">
+                                                <button th:if="${order.status == 'PENDING'}" 
+                                                        class="btn btn-primary btn-sm"
+                                                        th:onclick="'updateStatus(' + ${order.id} + ', \'IN_PROGRESS\')'">
+                                                    <i class="bi bi-play-fill me-1"></i> Start Preparing
+                                                </button>
+                                                <button th:if="${order.status == 'IN_PROGRESS'}" 
+                                                        class="btn btn-success btn-sm"
+                                                        th:onclick="'updateStatus(' + ${order.id} + ', \'READY\')'">
+                                                    <i class="bi bi-check-lg me-1"></i> Mark as Ready
+                                                </button>
+                                                <button th:if="${order.status == 'READY'}" 
+                                                        class="btn btn-outline-secondary btn-sm"
+                                                        disabled>
+                                                    <i class="bi bi-check2-all me-1"></i> Ready for Pickup
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            function updateStatus(orderId, status) {
+                fetch(`/barman/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to update order status. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+
+            // Refresh the page every 30 seconds to get new orders
+            setInterval(() => {
+                window.location.reload();
+            }, 30000);
+
+            // Highlight new orders
+            document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('highlight')) {
+                    const orderId = urlParams.get('highlight');
+                    const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+                    if (orderCard) {
+                        orderCard.classList.add('new-order');
+                    }
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html> 

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Receipt</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .receipt-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            border: 1px solid #dee2e6;
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .receipt-header h4 {
+            margin-bottom: 0.25rem;
+        }
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .receipt-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h4>Coffee Shop</h4>
+            <p>123 Java Lane, Caffeine City</p>
+        </div>
+
+        <div>
+            <p><strong>Order #:</strong> <span th:text="${payment.order.id}">123</span></p>
+            <p><strong>Date:</strong> <span th:text="${#temporals.format(payment.paymentDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+            <p><strong>Cashier:</strong> <span th:text="${payment.cashier.username}">cashier1</span></p>
+        </div>
+
+        <hr>
+
+        <div>
+            <div th:each="item : ${payment.order.items}" class="receipt-item">
+                <span th:text="${item.quantity + 'x ' + item.product.name}">1x Coffee</span>
+                <span th:text="${'$' + #numbers.formatDecimal(item.quantity * item.price, 1, 'COMMA', 2, 'POINT')}">$3.00</span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="receipt-item">
+            <span>Subtotal</span>
+            <span th:text="${'$' + #numbers.formatDecimal(payment.order.subtotal, 1, 'COMMA', 2, 'POINT')}">$3.00</span>
+        </div>
+        <div class="receipt-item">
+            <span>Tax</span>
+            <span th:text="${'$' + #numbers.formatDecimal(payment.order.tax, 1, 'COMMA', 2, 'POINT')}">$0.30</span>
+        </div>
+        
+        <hr>
+        
+        <div class="receipt-item fw-bold">
+            <span>Total</span>
+            <span th:text="${'$' + #numbers.formatDecimal(payment.order.total, 1, 'COMMA', 2, 'POINT')}">$3.30</span>
+        </div>
+        <div class="receipt-item">
+            <span th:text="${payment.paymentMethod}">CASH</span>
+            <span th:text="${'$' + #numbers.formatDecimal(payment.amountPaid, 1, 'COMMA', 2, 'POINT')}">$5.00</span>
+        </div>
+        <div class="receipt-item">
+            <span>Change</span>
+            <span th:text="${'$' + #numbers.formatDecimal(payment.change, 1, 'COMMA', 2, 'POINT')}">$1.70</span>
+        </div>
+
+        <div class="receipt-footer">
+            <p>Thank you for your visit!</p>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 d-print-none">
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print Receipt
+        </button>
+        <a th:href="@{/cashier/dashboard}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</body>
+</html> 
+ 

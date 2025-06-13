@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Admin Dashboard - Coffee Shop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Total Revenue</h6>
+                                    <h3 class="mb-0" th:text="${'$' + #numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                    <i class="bi bi-currency-dollar text-primary fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Total Orders</h6>
+                                    <h3 class="mb-0" th:text="${totalOrders}">0</h3>
+                                </div>
+                                <div class="bg-success bg-opacity-10 p-3 rounded">
+                                    <i class="bi bi-cart text-success fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Active Users</h6>
+                                    <h3 class="mb-0" th:text="${activeUsers}">0</h3>
+                                </div>
+                                <div class="bg-info bg-opacity-10 p-3 rounded">
+                                    <i class="bi bi-people text-info fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Average Order Value</h6>
+                                    <h3 class="mb-0" th:text="${'$' + #numbers.formatDecimal(averageOrderValue, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                    <i class="bi bi-graph-up text-warning fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Server</th>
+                                    <th>Table</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${recentOrders}">
+                                    <td th:text="${order.orderNumber}">ORD-001</td>
+                                    <td th:text="${order.server != null ? order.server.username : 'N/A'}">John</td>
+                                    <td th:text="${order.table != null ? order.table.number : 'N/A'}">1</td>
+                                    <td th:text="${#lists.size(order.items)}">3</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}">$25.00</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${'bg-' + (order.status == 'COMPLETED' ? 'success' : 
+                                                                                order.status == 'PENDING' ? 'warning' : 
+                                                                                order.status == 'CANCELLED' ? 'danger' : 'info')}"
+                                              th:text="${order.status}">Status</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentOrders)}">
+                                    <td colspan="7" class="text-center">No recent orders</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Users -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Active Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${activeUsersList}">
+                                    <td th:text="${user.username}">john.doe</td>
+                                    <td th:text="${user.firstName + ' ' + user.lastName}">John Doe</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${#strings.substringAfter(user.role.name, 'ROLE_')}">ADMIN</span>
+                                    </td>
+                                    <td th:text="${user.email}">john@example.com</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${user.enabled ? 'bg-success' : 'bg-danger'}"
+                                              th:text="${user.enabled ? 'Active' : 'Inactive'}">Active</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(activeUsersList)}">
+                                    <td colspan="5" class="text-center">No active users found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    </th:block>
+</body>
+</html> 
+ 

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Order Details</title>
+    <link rel="stylesheet" th:href="@{/css/order-details.css}" />
+</head>
+<body>
+<div layout:fragment="content" class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Error message if order not found -->
+            <div th:if="${param.error != null}" class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${param.error}"></span>
+                <a href="/server/dashboard" class="alert-link ms-2">Return to Dashboard</a>
+            </div>
+            
+            <!-- Order details card -->
+            <div class="card" th:if="${order != null}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Order #<span th:text="${order?.id}"></span></h4>
+                    <span class="badge" 
+                          th:classappend="${order?.status == 'COMPLETED' ? 'bg-success' : 
+                                        (order?.status == 'IN_PROGRESS' ? 'bg-warning' : 
+                                        (order?.status == 'PENDING' ? 'bg-info' : 'bg-secondary'))}">
+                        <span th:text="${order?.status}"></span>
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Table: <span th:text="${order?.table?.number}"></span></h6>
+                            <h6>Server: <span th:text="${order?.server?.firstName + ' ' + order?.server?.lastName}"></span></h6>
+                            <h6>Status: <span class="badge" 
+                                      th:classappend="${order?.status == 'COMPLETED' ? 'bg-success' : 
+                                                    (order?.status == 'IN_PROGRESS' ? 'bg-warning' : 
+                                                    (order?.status == 'PENDING' ? 'bg-info' : 'bg-secondary'))}"
+                                      th:text="${order?.status}"></span>
+                            </h6>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6>Order Time: <span th:if="${order?.createdAt != null}" th:text="${#temporals.format(order.createdAt, 'MMM dd, yyyy HH:mm')}"></span></h6>
+                            <h6 th:if="${order?.completedAt != null}">
+                                Completed: <span th:text="${#temporals.format(order.completedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                            </h6>
+                            <h6>Total: <span class="fw-bold" th:text="${'$' + #numbers.formatDecimal(order?.totalAmount ?: 0, 1, 2)}"></span></h6>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <h5 class="mb-3">Order Items</h5>
+                        <div th:if="${order?.items == null || order.items.isEmpty()}" class="alert alert-info">
+                            No items found in this order.
+                        </div>
+                        <table class="table table-bordered" th:if="${order?.items != null && !order.items.isEmpty()}">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${order.items}">
+                                    <td>
+                                        <h6 class="mb-0" th:text="${item?.product?.name}"></h6>
+                                        <small class="text-muted" th:if="${item?.notes != null && !item.notes.isEmpty()}" th:text="'Note: ' + ${item.notes}"></small>
+                                    </td>
+                                    <td class="text-center" th:text="${item?.quantity ?: 0}"></td>
+                                    <td class="text-end" th:text="${'$' + #numbers.formatDecimal(item?.price ?: 0, 1, 2)}"></td>
+                                    <td class="text-end" th:text="${'$' + #numbers.formatDecimal((item?.price ?: 0) * (item?.quantity ?: 0), 1, 2)}"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                    <td class="text-end fw-bold" th:text="'$' + #numbers.formatDecimal(order?.totalAmount ?: 0, 1, 2)"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end">Tax (10%):</td>
+                                    <td class="text-end" th:text="'$' + #numbers.formatDecimal((order?.totalAmount ?: 0) * 0.1, 1, 2)"></td>
+                                </tr>
+                                <tr class="table-active">
+                                    <td colspan="3" class="text-end"><h5 class="mb-0">Total:</h5></td>
+                                    <td class="text-end">
+                                        <h5 class="mb-0" th:text="'$' + #numbers.formatDecimal((order?.totalAmount ?: 0) * 1.1, 1, 2)"></h5>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="mt-3" th:if="${order.notes != null && !order.notes.isEmpty()}">
+                        <h6>Order Notes:</h6>
+                        <p class="text-muted" th:text="${order.notes}"></p>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/server/dashboard" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                        <div>
+                            <a th:if="${order?.status?.name() == 'PENDING' || order?.status?.name() == 'IN_PROGRESS'}" 
+                               th:href="@{'/server/orders/' + ${order?.id} + '/edit'}" 
+                               class="btn btn-primary me-2">
+                                <i class="fas fa-edit me-2"></i>Edit Order
+                            </a>
+                            <button th:if="${order?.status?.name() == 'PENDING' || order?.status?.name() == 'IN_PROGRESS'}" 
+                                    class="btn btn-danger" 
+                                    th:onclick="'cancelOrder(' + ${order?.id} + ')'"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="Cancel this order">
+                                <i class="fas fa-times me-2"></i>Cancel Order
+                            </button>
+                            <span th:if="${order?.status?.name() == 'COMPLETED' || order?.status?.name() == 'CANCELLED'}" 
+                                  class="badge"
+                                  th:classappend="${order?.status?.name() == 'COMPLETED' ? 'bg-success' : 'bg-secondary'}">
+                                <i class="fas fa-check me-1" th:if="${order?.status?.name() == 'COMPLETED'}"></i>
+                                <i class="fas fa-ban me-1" th:if="${order?.status?.name() == 'CANCELLED'}"></i>
+                                <span th:text="${order?.status}"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: scripts"></div>
+
+<script th:inline="javascript">
+    function cancelOrder(orderId) {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            fetch('/server/orders/' + orderId + '/status?status=cancelled', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/server/dashboard';
+                } else {
+                    response.json().then(data => {
+                        alert('Error: ' + (data.message || 'Failed to cancel order'));
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            });
+        }
+    }
+</script>
+</body>
+</html>

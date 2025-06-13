@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Order History - Coffee Shop</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h2 class="mb-4"><i class="bi bi-clock-history"></i> Order History</h2>
+
+            <!-- Filters -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form th:action="@{/server/orders/history}" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                                <input type="date" class="form-control" name="startDate" th:value="${param.startDate}">
+                                <input type="date" class="form-control" name="endDate" th:value="${param.endDate}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="status">
+                                <option value="">All Statuses</option>
+                                <option th:each="s : ${T(com.coffeeshop.model.OrderStatus).values()}"
+                                        th:value="${s}" th:text="${s.displayName}"
+                                        th:selected="${param.status != null and param.status[0] == s}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Table -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Table</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${orders}">
+                                    <td th:text="${'#' + order.id}">#123</td>
+                                    <td th:text="${order.table.number}">5</td>
+                                    <td th:text="${order.items.size()}">3</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}">$25.00</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${'bg-' + (order.status == 'COMPLETED' ? 'success' : 
+                                                                                order.status == 'PENDING' ? 'warning' : 
+                                                                                order.status == 'CANCELLED' ? 'danger' : 'info')}"
+                                              th:text="${order.status}">Status</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                    <td>
+                                        <a th:href="@{/server/orders/{id}(id=${order.id})}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(orders)}">
+                                    <td colspan="7" class="text-center">No orders found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/server/orders/history(page=${currentPage - 1}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, status=${param.status})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:classappend="${currentPage == i} ? 'active'">
+                                <a class="page-link" th:href="@{/server/orders/history(page=${i}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, status=${param.status})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/server/orders/history(page=${currentPage + 1}, size=${pageSize}, startDate=${param.startDate}, endDate=${param.endDate}, status=${param.status})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
+ 

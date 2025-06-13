@@ -128,4 +128,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
            "WHERE o.status = 'COMPLETED' " +
            "GROUP BY p.category", nativeQuery = true)
     List<Object[]> countOrdersByProductCategory();
+
+    @Query("SELECT o FROM Order o WHERE o.table.id = :tableId AND o.status IN :statuses ORDER BY o.createdAt DESC")
+    List<Order> findByTableIdAndStatusInOrderByCreatedAtDesc(@Param("tableId") Long tableId, @Param("statuses") List<OrderStatus> statuses);
+
+    long countByStatus(OrderStatus status);
 } 

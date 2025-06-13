@@ -6,6 +6,7 @@ import com.coffeeshop.model.PaymentMethod;
 import com.coffeeshop.model.PaymentStatus;
 import com.coffeeshop.repository.OrderRepository;
 import com.coffeeshop.repository.PaymentRepository;
+import com.coffeeshop.repository.TableRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final TableRepository tableRepository;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, TableRepository tableRepository) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
+        this.tableRepository = tableRepository;
     }
     
     @Override
@@ -62,7 +65,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Map<String, BigDecimal> getDailySummary() {
-        return Collections.emptyMap();
+        Map<String, BigDecimal> summary = new java.util.HashMap<>();
+        // TODO: Replace the following with real repository queries
+        summary.put("totalTransactions", BigDecimal.valueOf(paymentRepository.countToday())); // TODO: implement countToday()
+        summary.put("totalCash", paymentRepository.sumCashToday()); // TODO: implement sumCashToday()
+        summary.put("totalCard", paymentRepository.sumCardToday()); // TODO: implement sumCardToday()
+        summary.put("totalRevenue", paymentRepository.sumTotalToday()); // TODO: implement sumTotalToday()
+        summary.put("activeTables", BigDecimal.valueOf(tableRepository.countByStatus(com.coffeeshop.model.TableStatus.OCCUPIED))); // TODO: implement countByStatus()
+        summary.put("unpaidOrders", BigDecimal.valueOf(orderRepository.countByStatus(com.coffeeshop.model.OrderStatus.PENDING)));
+        summary.put("availableTables", BigDecimal.valueOf(tableRepository.countByStatus(com.coffeeshop.model.TableStatus.AVAILABLE))); // TODO: implement countByStatus()
+        return summary;
     }
 
     @Override

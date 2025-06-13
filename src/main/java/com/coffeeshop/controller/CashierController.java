@@ -45,10 +45,17 @@ public class CashierController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         List<DiningTable> tables = tableService.getAllTables();
+        for (DiningTable table : tables) {
+            Order currentOrder = orderService.findCurrentOrderForTable(table.getId());
+            table.setCurrentOrder(currentOrder);
+            if (currentOrder != null) {
+                currentOrder.setPayment(paymentService.getPaymentByOrder(currentOrder.getId()).orElse(null));
+            }
+        }
         Map<String, BigDecimal> dailySummary = paymentService.getDailySummary();
         
         model.addAttribute("tables", tables);
-        model.addAttribute("dailySummary", dailySummary);
+        model.addAttribute("summary", dailySummary);
         return "cashier/dashboard";
     }
 
@@ -57,24 +64,27 @@ public class CashierController {
     public String viewOrder(@PathVariable Long orderId, Model model) {
         Order order = orderService.getOrderById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
-        
         model.addAttribute("order", order);
-        model.addAttribute("paymentMethods", PaymentMethod.values());
         return "cashier/order-details";
     }
 
     // Process Payment
     @PostMapping("/orders/{orderId}/payment")
-    @ResponseBody
-    public ResponseEntity<?> processPayment(@PathVariable Long orderId,
-                                          @RequestBody Payment payment) {
-        try {
-            Payment processedPayment = paymentService.processPayment(orderId, payment);
-            return ResponseEntity.ok(processedPayment);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
+    public String processPaymentForm(
+        @PathVariable Long orderId,
+        @RequestParam("paymentMethod") String paymentMethod,
+        @RequestParam("amountPaid") java.math.BigDecimal amountPaid,
+        Model model
+    ) {
+        // Build Payment object
+        com.coffeeshop.model.Payment payment = new com.coffeeshop.model.Payment();
+        payment.setPaymentMethod(paymentMethod);
+        payment.setAmount(amountPaid);
+        payment.setStatus(com.coffeeshop.model.PaymentStatus.COMPLETED);
+        payment.setPaidAt(java.time.LocalDateTime.now());
+        paymentService.processPayment(orderId, payment);
+        // Redirect to dashboard or show success
+        return "redirect:/cashier/dashboard";
     }
 
     // Update Payment Status

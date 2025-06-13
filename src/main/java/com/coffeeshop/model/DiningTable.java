@@ -40,6 +40,9 @@ public class DiningTable {
     @OneToMany(mappedBy = "table")
     private java.util.List<Order> orders;
 
+    @jakarta.persistence.Transient
+    private Order currentOrder;
+
     public TableStatus getStatus() {
         return status;
     }
@@ -58,5 +61,23 @@ public class DiningTable {
 
     public Integer getCapacity() {
         return capacity;
+    }
+
+    public String getStatusText() {
+        if (status == null) return "Unknown";
+        switch (status) {
+            case AVAILABLE: return "Available";
+            case OCCUPIED: return "Occupied";
+            case RESERVED: return "Reserved";
+            default: return status.toString();
+        }
+    }
+
+    public Order getCurrentOrder() {
+        return currentOrder;
+    }
+
+    public void setCurrentOrder(Order currentOrder) {
+        this.currentOrder = currentOrder;
     }
 } 

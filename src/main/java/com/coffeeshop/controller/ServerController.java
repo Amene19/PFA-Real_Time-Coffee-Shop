@@ -6,6 +6,7 @@ import com.coffeeshop.model.OrderItem;
 import com.coffeeshop.model.OrderStatus;
 import com.coffeeshop.model.Product;
 import com.coffeeshop.model.DiningTable;
+import com.coffeeshop.model.TableStatus;
 import com.coffeeshop.model.User;
 import com.coffeeshop.dto.TableView;
 import com.coffeeshop.service.OrderService;
@@ -149,6 +150,11 @@ public class ServerController {
 
             // Save the order
             Order savedOrder = orderService.createOrder(order);
+
+            // Update table status to OCCUPIED
+            table.setStatus(TableStatus.OCCUPIED);
+            tableService.updateTableStatus(table.getId(), "OCCUPIED");
+
             return ResponseEntity.ok(savedOrder);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

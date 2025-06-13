@@ -217,4 +217,11 @@ public class OrderServiceImpl implements OrderService {
         // Placeholder implementation
         return Page.empty();
     }
+
+    @Override
+    public Order findCurrentOrderForTable(Long tableId) {
+        List<OrderStatus> activeStatuses = java.util.List.of(OrderStatus.PENDING, OrderStatus.IN_PROGRESS, OrderStatus.READY);
+        return orderRepository.findByTableIdAndStatusInOrderByCreatedAtDesc(tableId, activeStatuses)
+                .stream().findFirst().orElse(null);
+    }
 } 

@@ -9,196 +9,660 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Server Dashboard - Coffee Shop</title>
     <style>
-        .table-card {
-            transition: all 0.3s ease;
+        :root {
+            --primary-blue: #4F7CFF;
+            --light-gray: #F8F9FA;
+            --border-gray: #E5E7EB;
+            --text-dark: #1F2937;
+            --text-gray: #6B7280;
+            --success-green: #10B981;
+            --warning-orange: #F59E0B;
+            --info-cyan: #06B6D4;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .table-card:hover {
-            transform: translateY(-5px);
+
+        body {
+            background-color: var(--light-gray);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .table-status-available {
-            border-left: 5px solid #198754;
+
+        /* Header Styles */
+        .dashboard-header {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .table-status-occupied {
-            border-left: 5px solid #ffc107;
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
         }
-        .table-status-reserved {
-            border-left: 5px solid #0dcaf0;
+
+        .dashboard-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin: 0;
+            font-weight: 400;
         }
+
+        .refresh-button {
+            background: white;
+            color: var(--primary-blue);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-button:hover {
+            background: #f3f4f6;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
         .status-legend {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
         }
-        .status-legend .badge {
+
+        .status-badge {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-        }
-        .table-actions {
-            display: flex;
-            gap: 0.5rem;
             justify-content: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4F7CFF;
+            margin: 0 auto 1rem auto;
+            background: #eaf1ff;
+            width: fit-content;
         }
-        .table-info {
+
+        .status-badge.available {
+            background-color: var(--success-green);
+        }
+
+        .status-badge.occupied {
+            background-color: var(--warning-orange);
+        }
+
+        .status-badge.reserved {
+            background-color: var(--info-cyan);
+        }
+
+        .status-text {
+            color: #4F7CFF;
+            font-weight: bold;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .status-text.status-available {
+            color: var(--success-green);
+        }
+        .status-text.status-occupied {
+            color: var(--warning-orange);
+        }
+        .status-text.status-reserved {
+            color: var(--info-cyan);
+        }
+
+        /* Table Grid */
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+
+        .table-card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .table-card.available {
+            border-left-color: var(--success-green);
+        }
+
+        .table-card.occupied {
+            border-left-color: var(--warning-orange);
+        }
+
+        .table-card.reserved {
+            border-left-color: var(--info-cyan);
+        }
+
+        .table-header {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
         }
+
+        .table-number {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
         .table-capacity {
             display: flex;
             align-items: center;
             gap: 0.25rem;
-            color: #6c757d;
+            font-size: 0.875rem;
+            color: var(--text-gray);
         }
-        .refresh-button {
+
+        .table-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .table-status.available {
+            background-color: var(--success-green);
+        }
+
+        .table-status.occupied {
+            background-color: var(--warning-orange);
+        }
+
+        .table-status.reserved {
+            background-color: var(--info-cyan);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b6cff;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-orange);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e08e00;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #0d9668;
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* Active Orders Section */
+        .orders-section {
+            margin-top: 3rem;
+        }
+
+        .orders-header {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 1.5rem;
         }
-        .refresh-button i {
-            transition: transform 0.3s ease;
+
+        .orders-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
         }
-        .refresh-button:hover i {
-            transform: rotate(180deg);
+
+        .orders-count {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
+
+        .c-black {
+            color: black;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
         .order-card {
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
+
         .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
         }
+
+        .order-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-number {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .order-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .order-status.pending {
+            background-color: #FFF9C4;
+            color: #FBC02D;
+        }
+
+        .order-status.in-progress {
+            background-color: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .order-status.ready {
+            background-color: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .order-body {
+            padding: 1.5rem;
+        }
+
+        .order-table {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-gray);
+            font-size: 0.875rem;
+        }
+
         .order-items {
-            margin: 0.5rem 0;
-            padding-left: 1.25rem;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
         }
-        .order-items li {
-            margin-bottom: 0.25rem;
+
+        .order-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.875rem;
+            color: var(--text-gray);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f9fafb;
+            border-top: 1px solid var(--border-gray);
+        }
+
+        .order-total {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+        }
+
+        /* Icons */
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            fill: currentColor;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .table-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--info-cyan);
+            background-color: #f0f9ff;
+            color: #0369a1;
+        }
+
+        .alert-info {
+            border-left-color: var(--info-cyan);
+            background-color: #f0f9ff;
+            color: #0369a1;
+        }
+
+        .seats-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #f3f4f6;
+            color: #1976D2;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 1rem;
+            padding: 0.3rem 0.9rem;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+        .seats-badge .icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            fill: #1976D2;
+        }
+
+        .table-number-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #eaf1ff;
+            color: #4F7CFF;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 1rem;
+            padding: 0.3rem 1rem;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+        .table-number-badge .icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            fill: #4F7CFF;
         }
     </style>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <!-- Tables Section -->
-            <div class="row mb-4">
-                <div class="col-12 col-md-6">
-                    <h2><i class="bi bi-grid-3x3-gap"></i> Table Layout</h2>
-                </div>
-                <div class="col-12 col-md-6 d-flex justify-content-md-end align-items-center">
-                    <div class="status-legend">
-                        <span class="badge bg-success">
-                            <i class="bi bi-check-circle"></i> Available
-                        </span>
-                        <span class="badge bg-warning">
-                            <i class="bi bi-people-fill"></i> Occupied
-                        </span>
-                        <span class="badge bg-info">
-                            <i class="bi bi-calendar-check"></i> Reserved
-                        </span>
-                    </div>
-                </div>
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Server Dashboard
+                </h1>
+                <p class="dashboard-subtitle">Coffee Shop Management System</p>
             </div>
-
-            <div class="row mb-3">
-                <div class="col">
-                    <button id="refreshButton" class="btn btn-outline-secondary refresh-button">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh Tables
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="refreshButton" class="refresh-button">
+                    🔄 Refresh Tables
+                </button>
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-danger" style="padding: 0.5rem 1rem;">
+                        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16 13v-2H7V8l-5 4 5 4v-3zM20 3h-8c-1.1 0-2 .9-2 2v4h2V5h8v14h-8v-4h-2v4c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                        Logout
                     </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Table Layout Section -->
+            <div class="section-header">
+                <h2 class="section-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/>
+                    </svg>
+                    Table Layout
+                </h2>
+                <div class="status-legend">
+                    <span class="status-badge available c-black">
+                        ✓ Available
+                    </span>
+                    <span class="status-badge occupied c-black">
+                        👥 Occupied
+                    </span>
+                    <span class="status-badge reserved c-black">
+                        📅 Reserved
+                    </span>
                 </div>
             </div>
 
-            <div id="table-layout" class="row g-4">
+            <!-- Table Grid -->
+            <div id="table-layout" class="table-grid">
                 <div th:if="${#lists.isEmpty(assignedTables)}" class="col-12">
                     <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No tables are currently assigned to you.
+                        <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        No tables are currently assigned to you.
                     </div>
                 </div>
                 
-                <div th:each="table : ${assignedTables}" class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="card shadow-sm h-100 table-card" th:classappend="${table.statusClass}">
-                        <div class="card-body">
-                            <div class="table-info">
-                                <h5 class="card-title mb-0" th:text="|Table ${table.number}|">Table 1</h5>
-                                <div class="table-capacity">
-                                    <i class="bi bi-person"></i>
-                                    <span th:text="${table.capacity}">4</span>
-                                </div>
-                                <span class="badge" th:classappend="${table.statusBadge}"
-                                      th:text="${table.statusText}">Status</span>
-                            </div>
+                <div th:each="table : ${assignedTables}" class="table-card" th:classappend="${table.statusClass}">
+                    <div class="status-badge" th:class="'status-badge ' + ${table.statusBadge}" style="margin: 0 auto 1rem auto;">
+                        <span class="status-text"
+                              th:classappend="'status-' + ${table.statusText.toLowerCase()}">
+                            <span th:text="${table.statusText}">Status</span>
+                        </span>
+                    </div>
+                    <div class="table-info">
+                        <h3>Table <span th:text="${table.number}">1</span></h3>
+                        <div class="seats-badge">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M7 14c-1.1 0-2 .9-2 2v3h2v-3h6v3h2v-3c0-1.1-.9-2-2-2H7zm5-2c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
+                            </svg>
+                            <span th:text="${table.capacity}">4</span> seats
                         </div>
-                        <div class="card-footer bg-transparent border-0">
-                            <div class="table-actions">
-                                <a th:if="${table.canCreateOrder}"
-                                   th:href="@{/server/orders/new(tableId=${table.id})}" 
-                                   class="btn btn-primary btn-sm">
-                                    <i class="bi bi-plus-circle"></i> New Order
-                                </a>
-                                <a th:if="${table.canEditOrder}"
-                                   th:href="@{/server/orders/new(tableId=${table.id})}" 
-                                   class="btn btn-warning btn-sm">
-                                    <i class="bi bi-pencil"></i> Edit Order
-                                </a>
-                                <button th:if="${table.canMarkAvailable}"
-                                        th:onclick="|markTableAvailable(${table.id})|"
-                                        class="btn btn-success btn-sm">
-                                    <i class="bi bi-check-lg"></i> Mark Available
-                                </button>
-                            </div>
-                        </div>
+                    </div>
+
+                    <div class="table-actions">
+                        <a th:if="${table.canCreateOrder}"
+                           th:href="@{/server/orders/new(tableId=${table.id})}" 
+                           class="btn btn-primary">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            New Order
+                        </a>
+                        <a th:if="${table.canEditOrder}"
+                           th:href="@{/server/orders/new(tableId=${table.id})}" 
+                           class="btn btn-warning">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                            Edit Order
+                        </a>
+                        <button th:if="${table.canMarkAvailable}"
+                                th:data-table-id="${table.id}"
+                                class="btn btn-success mark-available-btn"
+                                th:onclick="'markTableAvailable(' + ${table.id} + ', event);'">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            Mark Available
+                        </button>
+                        
                     </div>
                 </div>
             </div>
 
             <!-- Active Orders Section -->
-            <div class="row mt-5">
-                <div class="col-12">
-                    <h2><i class="bi bi-clock-history"></i> Active Orders</h2>
+            <div class="orders-section">
+                <div class="orders-header">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <h2 class="orders-title">Active Orders</h2>
+                    <span class="orders-count" th:text="${#lists.size(activeOrders)}">3</span>
                 </div>
-            </div>
 
-            <div class="row g-4 mt-2">
-                <div th:if="${#lists.isEmpty(activeOrders)}" class="col-12">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No active orders at the moment.
-                    </div>
+                <div th:if="${#lists.isEmpty(activeOrders)}" class="alert alert-info">
+                    <svg class="icon" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                    No active orders at this time.
                 </div>
-                
-                <div th:each="order : ${activeOrders}" class="col-md-6 col-lg-4">
-                    <div class="card order-card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0" th:text="${'Order #' + order.orderNumber}">Order #123</h6>
-                            <span class="badge" 
-                                  th:classappend="${'bg-' + (order.status == 'PENDING' ? 'warning' : 
-                                                           order.status == 'IN_PROGRESS' ? 'info' : 
-                                                           order.status == 'READY' ? 'success' : 'secondary')}"
-                                  th:text="${order.status}">Status</span>
+
+                <div class="orders-grid">
+                    <div th:each="order : ${activeOrders}" class="order-card">
+                        <div class="order-header">
+                            <span class="order-number" th:text="|Order #${order.orderNumber}|">Order #ORD-001</span>
+                            <span class="order-status" 
+                                  th:classappend="${order.status == T(com.coffeeshop.model.OrderStatus).PENDING ? 'pending' : 
+                                                   order.status == T(com.coffeeshop.model.OrderStatus).IN_PROGRESS ? 'in-progress' : 
+                                                   order.status == T(com.coffeeshop.model.OrderStatus).READY ? 'ready' : 'secondary'}"
+                                  th:text="${order.status}">PENDING</span>
                         </div>
-                        <div class="card-body">
-                            <p class="mb-2">
-                                <i class="bi bi-grid"></i>
-                                <span th:text="${'Table ' + order.table.number}">Table 1</span>
-                            </p>
-                            <ul class="list-unstyled order-items">
-                                <li th:each="item : ${order.items}">
+                        <div class="order-body">
+                            <div class="order-table">
+                                <div class="table-number-badge">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/>
+                                    </svg>
+                                    <span th:text="|Table ${order.table.number}|">Table 2</span>
+                                </div>
+                            </div>
+                            <ul class="order-items">
+                                <li th:each="item : ${order.items}" class="order-item">
                                     <span th:text="${item.quantity + 'x ' + item.product.name}">1x Espresso</span>
                                 </li>
                             </ul>
-                            <p class="mb-0 text-muted" th:if="${order.notes}">
-                                <i class="bi bi-chat-left-text"></i>
-                                <small th:text="${order.notes}">Special instructions</small>
-                            </p>
-                        </div>
-                        <div class="card-footer">
-                            <div class="d-grid gap-2">
-                                <a th:href="@{/server/orders/{id}(id=${order.id})}" 
-                                   class="btn btn-outline-primary">
-                                    <i class="bi bi-eye"></i> View Details
-                                </a>
+                            <div class="order-total" th:if="${order.total}">
+                                Total: <span th:text="${order.total}">$12.50</span>
                             </div>
+                        </div>
+                        <div class="order-footer">
+                            <a th:href="@{/server/orders/{id}(id=${order.id})}" 
+                               class="btn btn-outline-primary" style="width: 100%;">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                View Details
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -207,38 +671,108 @@
     </div>
 
     <script th:inline="javascript">
-        function markTableAvailable(tableId) {
-            updateTableStatus(tableId, 'AVAILABLE');
-        }
-
-        function updateTableStatus(tableId, status) {
-            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        // Function to handle marking a table as available
+        async function markTableAvailable(tableId, event) {
+            event.preventDefault();
             
-            fetch(`/server/tables/${tableId}/status?status=${status}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
-                }
-            })
-            .then(response => {
+            if (!confirm('Are you sure you want to mark this table as available?')) {
+                return;
+            }
+            
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                
+                const response = await fetch(`/server/tables/${tableId}/status?status=AVAILABLE`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
                 if (response.ok) {
-                    location.reload();
+                    // Show success message and reload after a short delay
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'alert alert-success';
+                    successMsg.role = 'alert';
+                    successMsg.textContent = 'Table marked as available successfully!';
+                    document.body.prepend(successMsg);
+                    
+                    // Remove the success message after 3 seconds
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                    
+                    // Reload the page to reflect the changes
+                    setTimeout(() => location.reload(), 500);
                 } else {
-                    alert('Failed to update table status');
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to update table status');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to update table status');
-            });
+            } catch (error) {
+                console.error('Error updating table status:', error);
+                alert('Error: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         }
 
+        // Function to update table status via AJAX
+        async function updateTableStatus(tableId, status) {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                
+                const response = await fetch(`/server/tables/${tableId}/status?status=${status}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to update table status');
+                }
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Error updating table status:', error);
+                throw error;
+            }
+        }
+
+        // Add event listener for the refresh button
         document.getElementById('refreshButton').addEventListener('click', function() {
             location.reload();
         });
+
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Update status badges based on their state
+            document.querySelectorAll('.status-badge').forEach(badge => {
+                const status = badge.textContent.trim().toLowerCase();
+                badge.classList.add(`status-${status}`);
+            });
+        });
+
+        // Refresh the page every 30 seconds to keep data up to date
+        setInterval(() => {
+            location.reload();
+        }, 30000);
     </script>
 </body>
-</html> 
- 
+</html>

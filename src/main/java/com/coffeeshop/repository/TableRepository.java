@@ -14,4 +14,5 @@ public interface TableRepository extends JpaRepository<DiningTable, Long> {
     List<DiningTable> findByStatus(TableStatus status);
     Optional<DiningTable> findByNumber(Integer tableNumber);
     List<DiningTable> findByCapacityGreaterThanEqual(int capacity);
+    long countByStatus(TableStatus status);
 } 

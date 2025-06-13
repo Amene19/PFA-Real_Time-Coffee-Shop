@@ -4,138 +4,488 @@
       layout:decorate="~{layouts/base}">
 <head>
     <title>Cashier Dashboard - Coffee Shop</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        .summary-card {
-            transition: all 0.3s ease;
+        :root {
+            --primary-purple: #3B82F6;
+            --secondary-purple: #3B82F6;
+            --light-purple: #EDE9FE;
+            --light-gray-bg: #F3F4F6;
+            --dark-gray-text: #1F2937;
+            --medium-gray-text: #4B5563;
+            --light-gray-text: #9CA3AF;
+            --border-color: #E5E7EB;
+            --success-green: #10B981;
+            --danger-red: #EF4444;
+            --info-blue: #3B82F6;
+            --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .summary-card:hover {
-            transform: translateY(-5px);
+
+        body {
+            background-color: var(--light-gray-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            color: var(--dark-gray-text);
+            margin: 0;
+            padding: 0;
         }
+
+        /* Header Styles */
+        .dashboard-header {
+            background-color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dashboard-title-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dashboard-icon-wrapper {
+            background-color: var(--primary-purple);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dashboard-icon {
+            width: 1.75rem;
+            height: 1.75rem;
+            fill: white;
+        }
+
+        .dashboard-main-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .dashboard-subtitle {
+            font-size: 0.95rem;
+            color: var(--medium-gray-text);
+            margin-top: 0.25rem;
+        }
+
+        .refresh-button {
+            background-color: white;
+            color: var(--medium-gray-text);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-button:hover {
+            background-color: var(--light-gray-bg);
+            border-color: var(--medium-gray-text);
+        }
+
+        .refresh-button .icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-button:hover .icon {
+            transform: rotate(180deg);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            padding: 0 2rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Card Base Styles */
+        .card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--dark-gray-text);
+        }
+
+        .card-header .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            fill: var(--primary-purple);
+        }
+
+        /* Daily Summary Card */
+        .summary-card .card-body {
+            padding: 1.5rem;
+        }
+
         .summary-item {
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: 0.6rem;
             margin-bottom: 1rem;
-            background-color: #f8f9fa;
+            background-color: var(--light-gray-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--dark-gray-text);
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-item .label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .summary-item .label .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: var(--medium-gray-text);
+        }
+
+        .summary-item .value {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .summary-item.total {
+            background: linear-gradient(to right, var(--primary-purple), var(--secondary-purple));
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .summary-item.total .label .icon {
+            fill: white;
+        }
+
+        /* Tables Overview Card */
+        .table-card .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .summary-item .label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-        }
-        .summary-item .value {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-        .summary-item.total {
-            background-color: #2c3e50;
-            color: white;
-        }
-        .table-card {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .table-responsive {
-            max-height: calc(100vh - 300px);
-            overflow-y: auto;
-        }
-        .table th {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1;
-        }
-        .refresh-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .refresh-button i {
-            transition: transform 0.3s ease;
-        }
-        .refresh-button:hover i {
-            transform: rotate(180deg);
-        }
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        .action-button {
-            border-radius: 20px;
-            padding: 0.375rem 1rem;
-        }
+
         .search-box {
             position: relative;
-            max-width: 300px;
+            width: 250px;
         }
-        .search-box i {
+
+        .search-box .icon {
             position: absolute;
-            left: 1rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #6c757d;
+            fill: var(--light-gray-text);
+            width: 1.1rem;
+            height: 1.1rem;
         }
+
         .search-box input {
-            padding-left: 2.5rem;
-            border-radius: 20px;
+            width: 100%;
+            padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--dark-gray-text);
+            transition: border-color 0.2s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+        }
+
+        .table-responsive {
+            max-height: calc(100vh - 350px); /* Adjust based on header/footer height */
+            overflow-y: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background-color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--medium-gray-text);
+            text-transform: uppercase;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--light-gray-bg);
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .status-badge.paid {
+            background-color: #D1FAE5; /* green-100 */
+            color: #065F46; /* green-800 */
+        }
+
+        .status-badge.unpaid {
+            background-color: #FEE2E2; /* red-100 */
+            color: #991B1B; /* red-800 */
+        }
+
+        .status-badge.available {
+            background-color: #E0E7FF; /* indigo-100 */
+            color: #3730A3; /* indigo-800 */
+        }
+
+        .action-button {
+            background-color: var(--primary-purple);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background-color: var(--secondary-purple);
+        }
+
+        .action-button.outline {
+            background-color: transparent;
+            color: var(--medium-gray-text);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-button.outline:hover {
+            background-color: var(--light-gray-bg);
+            border-color: var(--medium-gray-text);
+        }
+
+        .action-button .icon {
+            width: 1rem;
+            height: 1rem;
+            fill: currentColor;
+        }
+
+        /* Small Info Cards at Bottom */
+        .info-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--medium-gray-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-gray-text);
+        }
+
+        .info-card-icon-wrapper {
+            background-color: var(--light-gray-bg);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-card-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            fill: var(--primary-purple);
+        }
+
+        .info-card.unpaid .info-card-icon-wrapper {
+            background-color: #FEE2E2; /* red-100 */
+        }
+        .info-card.unpaid .info-card-icon {
+            fill: #EF4444; /* red-500 */
+        }
+
+        .info-card.available .info-card-icon-wrapper {
+            background-color: #D1FAE5; /* green-100 */
+        }
+        .info-card.available .info-card-icon {
+            fill: #10B981; /* green-500 */
+        }
+
+        /* Empty state for table */
+        .empty-table-state {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--light-gray-text);
+        }
+
+        .empty-table-state .icon {
+            width: 3rem;
+            height: 3rem;
+            fill: var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .main-content {
+                padding: 0 1rem 1rem 1rem;
+            }
+            .table-card .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .table th, .table td {
+                padding: 0.75rem 1rem;
+            }
+            .status-badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.7rem;
+            }
+            .action-button {
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
+            }
+            .info-card {
+                padding: 1rem;
+            }
+            .info-card-value {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h2><i class="bi bi-cash-stack"></i> Cashier Dashboard</h2>
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title-group">
+                <div class="dashboard-icon-wrapper">
+                    <svg class="dashboard-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm2-4h-2V7h2v6z"/></svg>
                 </div>
-                <div class="col-md-6 d-flex justify-content-md-end align-items-center">
-                    <button id="refreshButton" class="btn btn-outline-secondary refresh-button">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh Data
-                    </button>
+                <div>
+                    <h1 class="dashboard-main-title">Cashier Dashboard</h1>
+                    <p class="dashboard-subtitle">Manage payments and monitor daily sales</p>
                 </div>
             </div>
+            <button id="refreshButton" class="refresh-button">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.45.83.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg>
+                Refresh Data
+            </button>
+        </div>
 
+        <div class="main-content">
             <div class="row g-4">
                 <!-- Daily Summary -->
                 <div class="col-md-4">
-                    <div class="card shadow-sm h-100 summary-card">
-                        <div class="card-header bg-white">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-graph-up"></i> Daily Summary
-                            </h5>
+                    <div class="card h-100 summary-card">
+                        <div class="card-header">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 15h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
+                            Daily Summary
                         </div>
                         <div class="card-body">
                             <div class="summary-item">
                                 <div class="label">
-                                    <i class="bi bi-receipt"></i>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 15h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
                                     Transactions
                                 </div>
-                                <div class="value" th:text="${summary.totalTransactions}">0</div>
+                                <div class="value" th:text="${summary['totalTransactions']}">0</div>
                             </div>
                             <div class="summary-item">
                                 <div class="label">
-                                    <i class="bi bi-cash"></i>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm2-4h-2V7h2v6z"/></svg>
                                     Cash
                                 </div>
-                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalCash, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary['totalCash'], 1, 'COMMA', 2, 'POINT')}">$0.00</div>
                             </div>
                             <div class="summary-item">
                                 <div class="label">
-                                    <i class="bi bi-credit-card"></i>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/></svg>
                                     Card
                                 </div>
-                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalCard, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary['totalCard'], 1, 'COMMA', 2, 'POINT')}">$0.00</div>
                             </div>
                             <div class="summary-item total">
                                 <div class="label">
-                                    <i class="bi bi-wallet2"></i>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/></svg>
                                     Total Revenue
                                 </div>
-                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary.totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="value" th:text="${'$' + #numbers.formatDecimal(summary['totalRevenue'], 1, 'COMMA', 2, 'POINT')}">$0.00</div>
                             </div>
                         </div>
                     </div>
@@ -143,22 +493,18 @@
 
                 <!-- Tables Overview -->
                 <div class="col-md-8">
-                    <div class="card shadow-sm h-100 table-card">
-                        <div class="card-header bg-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-grid"></i> Tables Overview
-                                </h5>
-                                <div class="search-box">
-                                    <i class="bi bi-search"></i>
-                                    <input type="text" class="form-control" id="tableSearch" 
-                                           placeholder="Search tables...">
-                                </div>
+                    <div class="card h-100 table-card">
+                        <div class="card-header">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/></svg>
+                            Tables Overview
+                            <div class="search-box ms-auto">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <input type="text" id="tableSearch" placeholder="Search tables...">
                             </div>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0">
+                                <table class="table mb-0">
                                     <thead>
                                         <tr>
                                             <th class="ps-4">Table</th>
@@ -171,33 +517,37 @@
                                     <tbody id="tables-overview-body">
                                         <tr th:each="table : ${tables}" th:data-table-number="${table.number}">
                                             <td class="ps-4">
-                                                <strong th:text="${'Table ' + table.number}">Table 1</strong>
+                                                <strong th:text="'Table ' + ${table.number}">Table 1</strong>
                                             </td>
-                                            <td th:text="${table.order != null ? '#' + table.order.orderNumber : '-'}">#123</td>
-                                            <td th:text="${table.order != null ? '$' + #numbers.formatDecimal(table.order.total, 1, 'COMMA', 2, 'POINT') : '-'}">$25.00</td>
+                                            <td th:text="${table.currentOrder != null ? '#' + table.currentOrder.orderNumber : '-'}">#123</td>
+                                            <td th:text="${table.currentOrder != null ? '$' + #numbers.formatDecimal(table.currentOrder.total, 1, 'COMMA', 2, 'POINT') : '-'}">$25.00</td>
                                             <td>
                                                 <span class="status-badge" 
-                                                      th:classappend="${table.order != null and table.order.paymentStatus == 'PAID' ? 'bg-success' : 
-                                                                      table.order != null and table.order.paymentStatus == 'UNPAID' ? 'bg-danger' : 'bg-secondary'}"
-                                                      th:text="${table.order != null ? table.order.paymentStatus : 'Available'}">Status</span>
+                                                      th:classappend="${table.currentOrder != null and table.currentOrder.paymentStatus == 'PAID' ? 'paid' : 
+                                                                      table.currentOrder != null and table.currentOrder.paymentStatus == 'UNPAID' ? 'unpaid' : 'available'}"
+                                                      th:text="${table.currentOrder != null ? table.currentOrder.paymentStatus : 'Available'}">Status</span>
                                             </td>
                                             <td class="text-end pe-4">
-                                                <a th:if="${table.order != null and table.order.paymentStatus == 'UNPAID'}"
-                                                   th:href="@{/cashier/payment/{orderId}(orderId=${table.order.id})}" 
-                                                   class="btn btn-primary action-button">
-                                                    <i class="bi bi-credit-card"></i> Process Payment
+                                                <a th:if="${table.currentOrder != null and table.currentOrder.paymentStatus == 'UNPAID'}"
+                                                   th:href="@{/cashier/orders/{orderId}(orderId=${table.currentOrder.id})}"
+                                                   class="action-button">
+                                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/></svg>
+                                                    Process Payment
                                                 </a>
-                                                <a th:if="${table.order != null and table.order.paymentStatus == 'PAID'}"
-                                                   th:href="@{/cashier/receipt/{orderId}(orderId=${table.order.id})}" 
-                                                   class="btn btn-outline-secondary action-button">
-                                                    <i class="bi bi-receipt"></i> View Receipt
+                                                <a th:if="${table.currentOrder != null and table.currentOrder.paymentStatus == 'PAID'}"
+                                                   th:href="@{/cashier/receipt/{orderId}(orderId=${table.currentOrder.id})}" 
+                                                   class="action-button outline">
+                                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 15h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
+                                                    View Receipt
                                                 </a>
                                             </td>
                                         </tr>
                                         <tr th:if="${#lists.isEmpty(tables)}">
-                                            <td colspan="5" class="text-center py-4">
-                                                <i class="bi bi-inbox display-4 text-muted"></i>
-                                                <p class="text-muted mt-2">No occupied tables</p>
+                                            <td colspan="5">
+                                                <div class="empty-table-state">
+                                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10z"/></svg>
+                                                    <p>No occupied tables</p>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -207,62 +557,94 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Small Info Cards at Bottom -->
+            <div class="row g-4 mt-4">
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div>
+                            <div class="info-card-title">Active Tables</div>
+                            <div class="info-card-value" th:text="${summary['activeTables']}">0</div>
+                        </div>
+                        <div class="info-card-icon-wrapper">
+                            <svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card unpaid">
+                        <div>
+                            <div class="info-card-title">Unpaid Orders</div>
+                            <div class="info-card-value" th:text="${summary['unpaidOrders']}">0</div>
+                        </div>
+                        <div class="info-card-icon-wrapper">
+                            <svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm2-4h-2V7h2v6z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card available">
+                        <div>
+                            <div class="info-card-title">Available Tables</div>
+                            <div class="info-card-value" th:text="${summary['availableTables']}">0</div>
+                        </div>
+                        <div class="info-card-icon-wrapper">
+                            <svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
             function refreshDashboard() {
-                const button = document.getElementById('refreshButton');
+                const button = document.getElementById("refreshButton");
                 button.disabled = true;
-                button.querySelector('i').style.transform = 'rotate(180deg)';
-                
+                button.querySelector(".icon").style.transform = "rotate(180deg)";
                 Promise.all([
-                    fetch('/cashier/dashboard/summary').then(res => res.text()),
-                    fetch('/cashier/dashboard/tables').then(res => res.text())
+                    fetch("/cashier/dashboard/summary").then(res => res.text()),
+                    fetch("/cashier/dashboard/tables").then(res => res.text())
                 ])
                 .then(([summaryHtml, tablesHtml]) => {
                     const parser = new DOMParser();
-                    
                     // Update summary
-                    const newSummary = parser.parseFromString(summaryHtml, 'text/html')
-                        .querySelector('.card-body');
-                    document.querySelector('.summary-card .card-body').innerHTML = newSummary.innerHTML;
-                    
+                    const newSummary = parser.parseFromString(summaryHtml, "text/html")
+                        .querySelector(".summary-card .card-body");
+                    document.querySelector(".summary-card .card-body").innerHTML = newSummary.innerHTML;
                     // Update tables
-                    const newTables = parser.parseFromString(tablesHtml, 'text/html')
-                        .getElementById('tables-overview-body');
-                    document.getElementById('tables-overview-body').innerHTML = newTables.innerHTML;
+                    const newTables = parser.parseFromString(tablesHtml, "text/html")
+                        .getElementById("tables-overview-body");
+                    document.getElementById("tables-overview-body").innerHTML = newTables.innerHTML;
                 })
                 .finally(() => {
                     button.disabled = false;
-                    button.querySelector('i').style.transform = 'rotate(0deg)';
+                    button.querySelector(".icon").style.transform = "rotate(0deg)";
                 });
             }
-
             function filterTables() {
-                const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
-                const rows = document.querySelectorAll('#tables-overview-body tr[data-table-number]');
-                
+                const searchTerm = document.getElementById("tableSearch").value.toLowerCase();
+                const rows = document.querySelectorAll("#tables-overview-body tr[data-table-number]");
                 rows.forEach(row => {
-                    const tableNumber = row.getAttribute('data-table-number');
-                    const orderNumber = row.querySelector('td:nth-child(2)').textContent;
+                    const tableNumber = row.getAttribute("data-table-number");
+                    const orderNumberElement = row.querySelector("td:nth-child(2)");
+                    const orderNumber = orderNumberElement ? orderNumberElement.textContent : "";
                     const shouldShow = 
-                        `table ${tableNumber}`.includes(searchTerm) ||
+                        `table ${tableNumber}`.toLowerCase().includes(searchTerm) ||
                         orderNumber.toLowerCase().includes(searchTerm);
-                    
-                    row.style.display = shouldShow ? '' : 'none';
+                    row.style.display = shouldShow ? "" : "none";
                 });
             }
-
             // Event listeners
-            document.getElementById('refreshButton').addEventListener('click', refreshDashboard);
-            document.getElementById('tableSearch').addEventListener('input', filterTables);
-
+            document.getElementById("refreshButton").addEventListener("click", refreshDashboard);
+            document.getElementById("tableSearch").addEventListener("input", filterTables);
             // Auto-refresh every 30 seconds
             setInterval(refreshDashboard, 30000);
+        });
         </script>
     </th:block>
 </body>
-</html> 
- 
+</html>
+

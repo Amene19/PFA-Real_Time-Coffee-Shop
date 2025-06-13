@@ -14,6 +14,7 @@ com\coffeeshop\service\ProductService.class
 com\coffeeshop\controller\BarmanController.class
 com\coffeeshop\model\Product.class
 com\coffeeshop\service\OrderService.class
+com\coffeeshop\model\DiningTable$1.class
 com\coffeeshop\controller\ServerController.class
 com\coffeeshop\controller\AuthController.class
 com\coffeeshop\model\OrderItem.class

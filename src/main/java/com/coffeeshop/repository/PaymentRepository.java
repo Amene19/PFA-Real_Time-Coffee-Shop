@@ -21,4 +21,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     BigDecimal sumPaymentsByDate(@Param("date") LocalDate date);
     @Query("SELECT p FROM Payment p WHERE p.paidAt BETWEEN :start AND :end")
     List<Payment> findPaymentsBetweenDates(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+    @Query("SELECT COUNT(p) FROM Payment p WHERE DATE(p.paidAt) = CURRENT_DATE")
+    long countToday();
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.paymentMethod = 'CASH' AND DATE(p.paidAt) = CURRENT_DATE")
+    BigDecimal sumCashToday();
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.paymentMethod = 'CARD' AND DATE(p.paidAt) = CURRENT_DATE")
+    BigDecimal sumCardToday();
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE DATE(p.paidAt) = CURRENT_DATE")
+    BigDecimal sumTotalToday();
 } 

@@ -73,6 +73,9 @@ public class Order {
     @Column(name = "completion_time")
     private LocalDateTime completionTime;
 
+    @jakarta.persistence.Transient
+    private com.coffeeshop.model.Payment payment;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -238,5 +241,18 @@ public class Order {
 
     public void setCompletionTime(LocalDateTime completionTime) {
         this.completionTime = completionTime;
+    }
+
+    public com.coffeeshop.model.Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(com.coffeeshop.model.Payment payment) {
+        this.payment = payment;
+    }
+
+    @jakarta.persistence.Transient
+    public String getPaymentStatus() {
+        return (this.payment != null && this.payment.getStatus() == com.coffeeshop.model.PaymentStatus.COMPLETED) ? "PAID" : "UNPAID";
     }
 } 

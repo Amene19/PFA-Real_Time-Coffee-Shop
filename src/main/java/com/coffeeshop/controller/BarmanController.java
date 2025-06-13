@@ -54,22 +54,19 @@ public class BarmanController {
     @PutMapping("/orders/{orderId}/status")
     @ResponseBody
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId,
-                                             @RequestParam OrderStatus status) {
+                                               @RequestBody Map<String, String> body) {
         try {
+            OrderStatus status = OrderStatus.valueOf(body.get("status"));
             // Record start time when moving to IN_PROGRESS
             if (status == OrderStatus.IN_PROGRESS) {
                 orderService.setOrderStartTime(orderId, LocalDateTime.now());
-            }
-            // Record completion time when moving to READY
-            else if (status == OrderStatus.READY) {
+            } else if (status == OrderStatus.READY) {
                 orderService.setOrderCompletionTime(orderId, LocalDateTime.now());
             }
-            
             Order order = orderService.updateOrderStatus(orderId, status);
             return ResponseEntity.ok(order);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 

@@ -46,4 +46,6 @@ public interface OrderService {
     Order updateOrderPriority(Long orderId, int priority);
     java.util.Map<String, java.time.Duration> getAveragePreparationTimesByCategory();
     java.util.Map<String, Integer> getOrderCountByProduct();
+
+    Order findCurrentOrderForTable(Long tableId);
 } 
